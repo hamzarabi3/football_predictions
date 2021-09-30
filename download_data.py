@@ -64,3 +64,12 @@ common_columns=set.intersection(*sets)
 
 data_file=os.path.join('data','all_leagues.csv')
 
+league=dict_historical_data[leagues[0]][common_columns]
+for l in leagues[1:]:
+    df=dict_historical_data[l][common_columns]
+    league=league.append(df)
+
+league=league.append(Other_Leagues[common_columns])
+to_keep=['away_team','home_team','date','FTR']
+league=league[to_keep]
+league.to_csv(data_file)
