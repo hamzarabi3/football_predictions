@@ -1,3 +1,4 @@
+from numpy.core import numeric
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 import pandas as pd 
 from joblib import dump, load
@@ -154,6 +155,7 @@ def generate_input_files(lookback=5,frac=1):
   #------6--------Encode categorical features, and scale numerical features----------------/
   print('Extracting categoricals')
   categoricals_df=league.select_dtypes(include=['object'])
+  categoricals_df.drop(['home_team','away_team'],axis=1,inplace=True)
   try:
     categoricals_df.drop(['total_goals_more_than_3','btts','total_goals_more_than_2','away_team_wins','home_team_wins','draw'],axis=1,inplace=True)
   except:
@@ -189,7 +191,6 @@ def generate_input_files(lookback=5,frac=1):
   dump(scaler,scaler_file)
   print(f'scaler saved in {scaler_file}')
 
-  numerical_df=pd.DataFrame(scaler.transform(numerical_df),index=categoricals_df.index,columns=numerical_df.columns)
 
   #------7--------save categoricals, numericals and target data in different files-----------/
 
