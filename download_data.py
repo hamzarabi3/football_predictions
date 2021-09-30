@@ -70,6 +70,6 @@ for l in leagues[1:]:
     league=league.append(df)
 
 league=league.append(Other_Leagues[common_columns])
-to_keep=['away_team','home_team','date','FTR']
+to_keep=['away_team','home_team','date','FTR','home_goals','away_goals']
 league=league[to_keep]
 league.to_csv(data_file)
