@@ -5,6 +5,8 @@ from pickle import load, dump
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from warnings import filterwarnings
+
+from xgboost.training import train
 filterwarnings('ignore')
 
 
@@ -16,7 +18,7 @@ targets_csv=os.path.join(data_folder,'targets.csv')
 
 features=pd.read_csv(features_csv,index_col=0)
 try:
-    features.drop(['index','Unnamed: 0'],axis=1,inplace=True)
+    features.drop(['Unnamed: 0','index'],axis=1,inplace=True)
 except KeyError:
     pass
 targets=pd.read_csv(targets_csv,index_col=0)
@@ -29,9 +31,8 @@ train_X, test_X, train_Y, test_Y=train_test_split(features,targets,test_size=0.3
 #test_X,val_X, test_Y,val_Y=train_test_split(test_X,test_Y,test_size=0.5)
 
 model_dir=os.path.join('models','xgb_models')
-
+print(train_X.columns)
 random_state=96
-
 for y in targets.columns:
     #if gpu is available uncomment the following line
     #xc=xgb.XGBClassifier(n_estimators=1000,tree_method='gpu_hist',random_state=random_state)
@@ -45,3 +46,6 @@ for y in targets.columns:
 
     print(f'saved model for {y}, accuracy :{a}%')
 
+
+print(train_X.columns)
+print(train_X.shape)

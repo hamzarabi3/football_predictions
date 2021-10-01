@@ -196,9 +196,12 @@ def generate_input_files(lookback=5,frac=1):
 
   targets=league[['total_goals_more_than_3','btts',"total_goals_more_than_2",'away_team_wins','home_team_wins','draw']]
   targets.to_csv(targets_file)
+  categoricals_df.to_csv(os.path.join(data_folder,'temp_cat.csv'))
+  numerical_df.to_csv(os.path.join(data_folder,'temp_num.csv'))
+
   categoricals_df=categoricals_df.join(numerical_df)
   categoricals_df.to_csv(features_file)
 
 
 
-generate_input_files(frac=0.03) 
+generate_input_files(frac=0.5) 
