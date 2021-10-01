@@ -15,6 +15,10 @@ targets_csv=os.path.join(data_folder,'targets.csv')
 
 
 features=pd.read_csv(features_csv,index_col=0)
+try:
+    features.drop(['index','Unnamed: 0'],axis=1,inplace=True)
+except KeyError:
+    pass
 targets=pd.read_csv(targets_csv,index_col=0)
 
 
