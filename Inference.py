@@ -4,7 +4,7 @@ import pandas as pd
 from joblib import dump, load
 import os 
 import numpy as np
-
+from scipy.special import softmax
 from warnings import filterwarnings
 
 from xgboost.sklearn import XGBClassifier
@@ -225,8 +225,11 @@ def run_inference(lookback=5):
       with open(xgb_path,'rb') as xgb:
         xgc=load(xgb)
 
-      predictions_df[target]=np.round(xgc.predict_proba(features_df)[:,1]*100)
+      predictions_df[target]=xgc.predict_proba(features_df)[:,1]
 
+
+  predictions_df[targets[3:]]=predictions_df[targets[3:]].apply(softmax,axis=1)
+  predictions_df[targets]=predictions_df[targets].apply(lambda raw:np.round(raw*100),axis=1)
   predictions_df.to_csv(predictions_file)
   print(f'predictions saved in {predictions_file}')
   
