@@ -88,11 +88,17 @@ def run_inference(lookback=5):
   data_folder='data'
   models_folder='models'
 
-  data_file=os.path.join(data_folder,'fixtures.csv')
+  data_file='https://www.football-data.co.uk/fixtures.csv'
   history_file=os.path.join(data_folder,'all_leagues.csv')
   predictions_file=os.path.join(data_folder,'predictions.csv')
  
-  league=pd.read_csv(data_file)
+  league=pd.read_csv(data_file,encoding='unicode_escape')
+  league=league[['Date','HomeTeam','AwayTeam']]
+  league.rename(columns={
+    "Date":'date',
+    'HomeTeam':'home_team',
+    'AwayTeam':'away_team'
+  },inplace=True)
   league.date=pd.to_datetime(league.date)
   league.reset_index(inplace=True)
   league.drop_duplicates(inplace=True)
