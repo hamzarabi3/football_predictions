@@ -331,10 +331,12 @@ def run_inference(lookback=5, results_add_up=False):
     predictions_df[targets] = predictions_df[targets].apply(
         lambda raw: np.round(raw * 100), axis=1
     )
-    predictions_df["max"] = predictions_df[targets].max(axis=1)
-    predictions_df["id_max"] = predictions_df[targets].idxmax(axis=1)
+    predictions_df["max_ftr"] = predictions_df[targets[3:]].max(axis=1)
+    predictions_df["id_max_ftr"] = predictions_df[targets[3:]].idxmax(axis=1)
+    predictions_df["max_goals"] = predictions_df[targets[:3]].max(axis=1)
+    predictions_df["id_max_goals"] = predictions_df[targets[:3]].idxmax(axis=1)
     predictions_df.to_csv(predictions_file)
     print(f"predictions saved in {predictions_file}")
 
 
-run_inference(results_add_up=False)
+run_inference(results_add_up=True)
