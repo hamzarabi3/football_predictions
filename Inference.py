@@ -81,7 +81,7 @@ def get_previous_match_goals(match_index,team_name,date,df):
 
 # lookback=5
 # training=True
-def run_inference(lookback=5):
+def run_inference(lookback=5,results_add_up=False):
   """
   Takes all_leagues.csv file and outputs train_features.csv, and train_targets.csv
   """
@@ -227,9 +227,12 @@ def run_inference(lookback=5):
 
       predictions_df[target]=xgc.predict_proba(features_df)[:,1]
 
-
-  predictions_df[targets[3:]]=predictions_df[targets[3:]].apply(softmax,axis=1)
+  if results_add_up:
+    predictions_df[targets[3:]]=predictions_df[targets[3:]].apply(softmax,axis=1)
+  
   predictions_df[targets]=predictions_df[targets].apply(lambda raw:np.round(raw*100),axis=1)
+  predictions_df['max']=predictions_df[targets].max(axis=1)
+  predictions_df['id_max']=predictions_df[targets].idxmax(axis=1)
   predictions_df.to_csv(predictions_file)
   print(f'predictions saved in {predictions_file}')
   
@@ -237,5 +240,5 @@ def run_inference(lookback=5):
 
 
 
-run_inference() 
+run_inference(results_add_up=False) 
  
