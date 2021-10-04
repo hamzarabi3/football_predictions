@@ -34,7 +34,7 @@ def get_previous_match_result(match_index, team_name, date, df):
         filter2 = df.query('away_team=="me playing in the kitchen"')
 
     if len(filter1) == 0 and len(filter2) > 0:
-        return filter2["FTR"]
+        return filter2["FTR"] 
     if len(filter1) > 0 and len(filter2) == 0:
         return filter1["FTR"]
     if len(filter1) == 0 and len(filter2) == 0:
@@ -86,7 +86,7 @@ def generate_input_files(lookback=5, frac=1):
     data_folder = "data"
     models_folder = "models"
 
-    data_file = os.path.join(data_folder, "all_leagues.csv")
+    data_file = os.path.join(data_folder, "match_results_E0_93_21.csv")
 
     league = pd.read_csv(data_file).sample(frac=frac)
     league.date = pd.to_datetime(league.date)
@@ -143,15 +143,6 @@ def generate_input_files(lookback=5, frac=1):
     # ------4----------Create our prediction objectives from goals data----------------/
     print("Creating target columns")
 
-    league["total_goals_more_than_3"] = league.apply(
-        lambda raw: (raw["away_goals"] + raw["home_goals"]) >= 3, axis=1
-    ).astype("int")
-    league["btts"] = league.apply(
-        lambda raw: raw["away_goals"] > 0 and raw["home_goals"] > 0, axis=1
-    ).astype("int")
-    league["total_goals_more_than_2"] = league.apply(
-        lambda raw: (raw["away_goals"] + raw["home_goals"]) >= 2, axis=1
-    ).astype("int")
     league["away_team_wins"] = league.apply(
         lambda raw: raw["FTR"] == "A", axis=1
     ).astype("int")
@@ -178,9 +169,7 @@ def generate_input_files(lookback=5, frac=1):
     try:
         categoricals_df.drop(
             [
-                "total_goals_more_than_3",
-                "btts",
-                "total_goals_more_than_2",
+
                 "away_team_wins",
                 "home_team_wins",
                 "draw",
@@ -199,9 +188,7 @@ def generate_input_files(lookback=5, frac=1):
     try:
         numerical_df.drop(
             [
-                "total_goals_more_than_3",
-                "btts",
-                "total_goals_more_than_2",
+
                 "away_team_wins",
                 "home_team_wins",
                 "draw",
@@ -242,17 +229,13 @@ def generate_input_files(lookback=5, frac=1):
 
     targets = league[
         [
-            "total_goals_more_than_3",
-            "btts",
-            "total_goals_more_than_2",
+
             "away_team_wins",
             "home_team_wins",
             "draw",
         ]
     ]
     targets.to_csv(targets_file)
-    categoricals_df.to_csv(os.path.join(data_folder, "temp_cat.csv"))
-    numerical_df.to_csv(os.path.join(data_folder, "temp_num.csv"))
 
     categoricals_df = categoricals_df.join(numerical_df)
     categoricals_df.to_csv(features_file)
