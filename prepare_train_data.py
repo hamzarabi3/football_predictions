@@ -4,75 +4,11 @@ import pandas as pd
 from joblib import dump, load
 import os
 import numpy as np
-
+from utils import get_previous_match_result, get_previous_match_goals
 from warnings import filterwarnings
 
 filterwarnings("ignore")
 
-# -----0----------------functions for adding previous match results and goals------------------------------------/
-def get_previous_match_result(match_index, team_name, date, df):
-    try:
-        filter1 = df.query("away_team==@team_name and date<@date")
-        filter1 = filter1.sort_values(by="date")
-        filter1 = filter1.iloc[-match_index]
-        if filter1["FTR"] == "A":
-            filter1["FTR"] = "W"
-        elif filter1["FTR"] == "H":
-            filter1["FTR"] = "L"
-    except:
-        filter1 = df.query('away_team=="me playing in the kitchen"')
-
-    try:
-        filter2 = df.query("home_team==@team_name and date<@date")
-        filter2 = filter2.sort_values(by="date")
-        filter2 = filter2.iloc[-match_index]
-        if filter2["FTR"] == "A":
-            filter2["FTR"] = "L"
-        elif filter2["FTR"] == "H":
-            filter2["FTR"] = "W"
-    except:
-        filter2 = df.query('away_team=="me playing in the kitchen"')
-
-    if len(filter1) == 0 and len(filter2) > 0:
-        return filter2["FTR"] 
-    if len(filter1) > 0 and len(filter2) == 0:
-        return filter1["FTR"]
-    if len(filter1) == 0 and len(filter2) == 0:
-        return None
-
-    if filter1.date < filter2.date:
-        return filter2["FTR"]
-    return filter1["FTR"]
-
-
-def get_previous_match_goals(match_index, team_name, date, df):
-    try:
-        filter1 = df.query("away_team==@team_name and date<@date")
-        filter1 = filter1.sort_values(by="date")
-        filter1 = filter1.iloc[-match_index]
-        date1 = filter1.date
-        filter1 = filter1["away_goals"]
-    except:
-        filter1 = None
-    try:
-        filter2 = df.query("home_team==@team_name and date<@date")
-        filter2 = filter2.sort_values(by="date")
-        filter2 = filter2.iloc[-match_index]
-        date2 = filter2.date
-
-        filter2 = filter2["home_goals"]
-    except:
-        filter2 = None
-
-    if filter1 is None and filter2 is not None:
-        return filter2
-    if filter1 is not None and filter2 is None:
-        return filter1
-    if filter1 is None and filter2 is None:
-        return None
-    if date1 < date2:
-        return filter2
-    return filter1
 
 
 # -----1----------reading data file and CONFIGURATIONS--------------------------------------------------------------------------------------------------------/
@@ -92,9 +28,11 @@ def generate_input_files(lookback=5, frac=1):
     league.date = pd.to_datetime(league.date)
     league.reset_index(inplace=True)
     league.drop_duplicates(inplace=True)
+    league.dropna(inplace=True)
 
     targets_file = os.path.join(data_folder, "targets.csv")
     features_file = os.path.join(data_folder, "features.csv")
+    targets=league[['FTR']]
 
     # -----2-------Adding previous matches results(win, lose, draw), lookback argument determins how many past matches to consider as input to the model----------------/
     print("Adding history of results")
@@ -140,16 +78,7 @@ def generate_input_files(lookback=5, frac=1):
         )
         league[new_columna].fillna(0, inplace=True)
 
-    # ------4----------Create our prediction objectives from goals data----------------/
-    print("Creating target columns")
 
-    league["away_team_wins"] = league.apply(
-        lambda raw: raw["FTR"] == "A", axis=1
-    ).astype("int")
-    league["home_team_wins"] = league.apply(
-        lambda raw: raw["FTR"] == "H", axis=1
-    ).astype("int")
-    league["draw"] = league.apply(lambda raw: raw["FTR"] == "D", axis=1).astype("int")
 
     # ------5---------Create additional calendar features from the datetime column------/
 
@@ -170,9 +99,7 @@ def generate_input_files(lookback=5, frac=1):
         categoricals_df.drop(
             [
 
-                "away_team_wins",
-                "home_team_wins",
-                "draw",
+                "FTR"
             ],
             axis=1,
             inplace=True,
@@ -189,9 +116,7 @@ def generate_input_files(lookback=5, frac=1):
         numerical_df.drop(
             [
 
-                "away_team_wins",
-                "home_team_wins",
-                "draw",
+                'FTR'
             ],
             axis=1,
             inplace=True,
@@ -227,18 +152,10 @@ def generate_input_files(lookback=5, frac=1):
 
     # ------7--------save categoricals, numericals and target data in different files-----------/
 
-    targets = league[
-        [
-
-            "away_team_wins",
-            "home_team_wins",
-            "draw",
-        ]
-    ]
     targets.to_csv(targets_file)
 
     categoricals_df = categoricals_df.join(numerical_df)
     categoricals_df.to_csv(features_file)
 
 
-generate_input_files(frac=0.5)
+generate_input_files(12)
