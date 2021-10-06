@@ -1,0 +1,3 @@
+booster: gblinear
+lambda: 0.996390119803819
+alpha: 1.510122265371948e-08
